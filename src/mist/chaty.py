@@ -2,7 +2,7 @@ import logging
 import config
 
 from langchain_mistralai import ChatMistralAI
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ class MistralChaty:
     
     def chat(self):
         logger.info("Starting chat")
-        prompt = [HumanMessage('What is the capital of France?')]
-        completion = self.llm.invoke(prompt)
+        system_msg = SystemMessage('You are a helpful assistant that responds to questions with three exclamation marks.')
+        human_msg = HumanMessage('What is the capital of France?')
+        completion = self.llm.invoke([system_msg, human_msg])
         print(completion.content)
