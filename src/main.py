@@ -2,7 +2,7 @@ import config
 import logging
 import logging.config
 
-from mist.chaty import AnswerWithJustification, MistralChaty
+from mist.chaty import MistralChaty
 
 # Initialize logging
 logging.config.dictConfig(config.LOGGING_CONFIG)
@@ -18,7 +18,7 @@ def main():
             logger.debug("Debug mode is enabled")
 
         chaty = MistralChaty()        
-        chaty.chatStruct()
+        chaty.chat()
 
 
     except KeyboardInterrupt:
