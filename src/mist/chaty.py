@@ -5,6 +5,8 @@ import config
 from langchain_mistralai import ChatMistralAI
 from langchain_core.prompts import ChatPromptTemplate
 
+from mist.emb import MissLoad
+
 # Get logger for this module
 logger = logging.getLogger(__name__)
 
@@ -16,18 +18,18 @@ class MistralChaty:
             temperature=0
         )
     
-    def chat(self):
+    def chat(self, langfuse_handler):
+        question = "Wie lange hat Hungerkünstler gehungert ?"
+        docs = MissLoad().query(question)
         logger.info("Starting chat")
 
-        template = ChatPromptTemplate.from_messages([
-            ('system', 'You are a helpful assistant.'),
-            ('human', '{question}'),
-        ])
+        prompt = ChatPromptTemplate.from_template("""Beantworte die Frage nur basierend auf dem folgenden Kontext.
+            {context}
+            Frage: {question}
+            """)
 
-        chatbot = template | self.llm 
-
-        result = chatbot.invoke({
-                "question": "Which model providers offer LLMs?"
-            })
+        chatbot = prompt | self.llm 
+        result =chatbot.invoke({"context": docs,"question": question}, config={"callbacks": [langfuse_handler]})
+    
         print(result.content)
                 

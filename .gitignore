@@ -1,3 +1,7 @@
+# project ignore
+chroma_langchain_db/*
+HUNGER.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
