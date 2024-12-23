@@ -4,6 +4,8 @@ import logging.config
 
 from mist.chaty import MistralChaty
 
+from mist.agent import runAgent
+
 # Initialize logging
 logging.config.dictConfig(config.LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
@@ -25,8 +27,9 @@ def main():
             logger.info(f"Running in {config.ENVIRONMENT} mode")
             logger.debug("Debug mode is enabled")
 
-        chaty = MistralChaty()        
-        chaty.chat(langfuse_handler)
+        runAgent()
+        # chaty = MistralChaty()        
+        # chaty.chat(langfuse_handler)
 
 
     except KeyboardInterrupt:
