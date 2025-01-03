@@ -2,34 +2,66 @@ from itertools import chain
 import logging
 import config
 
+from langchain_ollama import ChatOllama
 from langchain_mistralai import ChatMistralAI
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage
 
-from mist.emb import MissLoad
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph import MessagesState
+from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import tools_condition
+
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
 
-class MistralChaty:
+
+def multiply(a: int, b: int) -> int:
+    """Multiply a and b.
+
+    Args:
+        a: first int
+        b: second int
+    """
+    return a * b
+
+
+class MistralRouter:
     def __init__(self):        
         logger.info(f"Initializing Mistral LLM  model {config.MISTRAL_MODEL}")
-        self.llm = ChatMistralAI(
-            model=config.MISTRAL_MODEL,
+        # self.llm = ChatMistralAI(
+        #     model=config.MISTRAL_MODEL,
+        #     temperature=0
+        # )
+        self.llm = ChatOllama(
+            model="llama3.2",
             temperature=0
         )
-    
-    def chat(self, langfuse_handler):
-        question = "Wie lange hat Hungerkünstler gehungert ?"
-        docs = MissLoad().query(question)
-        logger.info("Starting chat")
+        self.llm_with_tools =  self.llm.bind_tools([multiply])
 
-        prompt = ChatPromptTemplate.from_template("""Beantworte die Frage nur basierend auf dem folgenden Kontext.
-            {context}
-            Frage: {question}
-            """)
+        # Build graph
+        builder = StateGraph(MessagesState)
+        builder.add_node("tool_calling_llm", self.tool_calling_llm)
+        builder.add_node("tools", ToolNode([multiply]))
+        builder.add_edge(START, "tool_calling_llm")
+        builder.add_conditional_edges(
+            "tool_calling_llm",
+            # If the latest message (resultool_calling_llmt) from assistant is a tool call -> tools_condition routes to tools
+            # If the latest message (result) from assistant is a not a tool call -> tools_condition routes to END
+            tools_condition,
+        )
+        builder.add_edge("tools", END)
+        self.graph = builder.compile()
 
-        chatbot = prompt | self.llm 
-        result =chatbot.invoke({"context": docs,"question": question}, config={"callbacks": [langfuse_handler]})
+
+    def tool_calling_llm(self, state: MessagesState):
+        return {"messages": [self.llm_with_tools.invoke(state["messages"])]}
+
     
-        print(result.content)
+    def doStuff(self):
+        logger.info("do Stuff")
+        messages = [HumanMessage(content="multi 2 and 5")]
+        messages = self.graph.invoke({"messages": messages})
+        for m in messages['messages']:
+            m.pretty_print()
                 

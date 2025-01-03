@@ -2,9 +2,8 @@ import config
 import logging
 import logging.config
 
-from mist.chaty import MistralChaty
+from mist.chaty import MistralRouter
 
-from mist.agent import runAgent
 
 # Initialize logging
 logging.config.dictConfig(config.LOGGING_CONFIG)
@@ -27,9 +26,9 @@ def main():
             logger.info(f"Running in {config.ENVIRONMENT} mode")
             logger.debug("Debug mode is enabled")
 
-        runAgent()
-        # chaty = MistralChaty()        
-        # chaty.chat(langfuse_handler)
+      
+        route = MistralRouter()        
+        route.doStuff()
 
 
     except KeyboardInterrupt:

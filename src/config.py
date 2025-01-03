@@ -16,6 +16,8 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'prod')
 
 
+os.environ["OLLAMA_HOST"] = "http://192.168.1.107:11434"
+
 def validate_config():
 
     # Check required API settings
